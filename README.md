@@ -1,7 +1,7 @@
-# Smart URL Redirector 🔀
+# Redirector
 
 <p align="center">
-  <img src="assets/logo.png" alt="Smart URL Redirector logo" width="128">
+  <img src="assets/logo.png" alt="Redirector logo" width="128">
 </p>
 
 <p align="center">
