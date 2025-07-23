@@ -2,7 +2,7 @@ const DEFAULT_RULES = [
   {
     id: 'reddit-subreddit-blocker',
     name: 'Reddit Subreddit Blocker',
-    pattern: '^https?://(?:www\\.)?reddit\\.com/r/[^/]+/?$',
+    pattern: `^https?://(?:www\.)?reddit\.com/r/[^/]+/?(?:(?:hot|new|rising|top|best|controversial)/?(?:\?t=(?:hour|day|week|month|year|all))?)?/?$`,
     destination: 'https://www.reddit.com',
     enabled: true,
   },
