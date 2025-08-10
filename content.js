@@ -2,7 +2,7 @@ const DEFAULT_RULES = [
   {
     id: 'reddit-subreddit',
     name: 'Reddit Subreddit Redirect',
-    pattern: `^https?://(?:www\.)?reddit\.com/r/[^/]+/?(?:(?:hot|new|rising|top|best|controversial)/?(?:\?t=(?:hour|day|week|month|year|all))?)?/?$`,
+    pattern: `^https?://(?:www\\.)?reddit\\.com/r/[^/]+(?:/(?:hot|new|rising|top|best|controversial))?(?:\\?t=(?:hour|day|week|month|year|all))?/?$`,
     destination: 'https://www.reddit.com',
     enabled: true,
   },
@@ -12,6 +12,13 @@ const DEFAULT_RULES = [
     pattern: `^https?://(?:www\.)?youtube\.com/?$`,
     destination:
       'https://www.youtube.com/results?search_query=python+clean+code',
+    enabled: true,
+  },
+  {
+    id: 'facebook-feed-redirect',
+    name: 'Facebook Feed Redirect',
+    pattern: `/^https:\/\/www\.facebook\.com\/?$/`,
+    destination: 'https://www.facebook.com/marketplace',
     enabled: true,
   },
 ];

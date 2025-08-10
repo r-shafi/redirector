@@ -14,6 +14,13 @@ const DEFAULT_RULES = [
       'https://www.youtube.com/results?search_query=python+clean+code',
     enabled: true,
   },
+  {
+    id: 'facebook-feed-redirect',
+    name: 'Facebook Feed Redirect',
+    pattern: `/^https:\/\/www\.facebook\.com\/?$/`,
+    destination: 'https://www.facebook.com/marketplace',
+    enabled: true,
+  },
 ];
 
 let currentRules = [];
