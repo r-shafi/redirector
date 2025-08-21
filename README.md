@@ -42,7 +42,7 @@ _Coming soon_
 1. **Click the extension icon** in your toolbar
 2. **Add your first rule:**
    - Name: `Block Reddit Subreddits`
-   - Pattern: `^https?://(?:www\.)?reddit\.com/r/[^/]+/?$`
+   - Pattern: `^https?:\/\/(?:www\.)?reddit\.com\/r\/[^\/]+(?:\/(?:hot|new|rising|top|best|controversial))?(?:\/?\?t=(hour|day|week|month|year|all))?\/?$`
    - Destination: `https://www.reddit.com`
 3. **Enable the rule** and test it by visiting any subreddit
 
@@ -67,8 +67,8 @@ Destination: https://twitter.com/notifications
 **Reddit Subreddits → Homepage**
 
 ```
-Pattern: ^https?://(?:www\.)?reddit\.com/r/[^/]+/?$
-Destination: https://www.reddit.com
+Pattern: `^https?:\/\/(?:www\.)?reddit\.com\/r\/[^\/]+(?:\/(?:hot|new|rising|top|best|controversial))?(?:\/?\?t=(hour|day|week|month|year|all))?\/?$`
+Destination: `https://www.reddit.com`
 ```
 
 ### Clean Up Tracking Links
