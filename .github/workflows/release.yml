@@ -1,0 +1,126 @@
+name: Release Extension
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine next version
+        id: version
+        run: |
+          # Get latest tag, default to v0.0.0 if none exists
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Last tag: $LAST_TAG"
+
+          # Strip the 'v' prefix for semver math
+          LAST_VER="${LAST_TAG#v}"
+          MAJOR=$(echo "$LAST_VER" | cut -d. -f1)
+          MINOR=$(echo "$LAST_VER" | cut -d. -f2)
+          PATCH=$(echo "$LAST_VER" | cut -d. -f3)
+
+          # Get commit messages since last tag
+          COMMITS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"%s" 2>/dev/null || git log --pretty=format:"%s")
+
+          # Determine bump type
+          if echo "$COMMITS" | grep -q "BREAKING CHANGE"; then
+            MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0
+          elif echo "$COMMITS" | grep -qE "^feat(\(.*\))?:"; then
+            MINOR=$((MINOR + 1)); PATCH=0
+          else
+            PATCH=$((PATCH + 1))
+          fi
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "New version: v${NEW_VERSION}"
+          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=v${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "last_tag=${LAST_TAG}" >> $GITHUB_OUTPUT
+
+      - name: Update manifest.json version
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          jq --arg v "$VERSION" '.version = $v' manifest.json > manifest.tmp.json
+          mv manifest.tmp.json manifest.json
+          echo "Updated manifest.json to version $VERSION"
+
+      - name: Build Chrome zip
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          mkdir -p dist
+          zip -r "dist/redirector-chrome-v${VERSION}.zip" \
+            manifest.json \
+            content.js \
+            popup.js \
+            popup.html \
+            assets/
+          echo "Built Chrome zip"
+
+      - name: Build Firefox zip
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          # Ensure browser_specific_settings is present in the Firefox manifest
+          jq 'if .browser_specific_settings then . else . + {
+            "browser_specific_settings": {
+              "gecko": {
+                "id": "redirector@r-shafi",
+                "strict_min_version": "109.0"
+              }
+            }
+          } end' manifest.json > manifest.firefox.json
+
+          # Create a temp dir for Firefox build
+          mkdir -p firefox-build
+          cp content.js popup.js popup.html firefox-build/
+          cp -r assets/ firefox-build/assets/
+          cp manifest.firefox.json firefox-build/manifest.json
+
+          cd firefox-build
+          zip -r "../dist/redirector-firefox-v${VERSION}.zip" .
+          cd ..
+          rm -rf firefox-build manifest.firefox.json
+          echo "Built Firefox zip"
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          LAST_TAG=${{ steps.version.outputs.last_tag }}
+          TAG=${{ steps.version.outputs.tag }}
+
+          NOTES=$(git log "${LAST_TAG}..HEAD" --pretty=format:"- %s (%h)" 2>/dev/null || git log --pretty=format:"- %s (%h)")
+
+          if [ -z "$NOTES" ]; then
+            NOTES="- Initial release"
+          fi
+
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "## What's Changed" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "**Full Changelog**: https://github.com/r-shafi/redirector/commits/${TAG}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body: ${{ steps.notes.outputs.notes }}
+          files: |
+            dist/redirector-chrome-v${{ steps.version.outputs.version }}.zip
+            dist/redirector-firefox-v${{ steps.version.outputs.version }}.zip
+          draft: false
+          prerelease: false
