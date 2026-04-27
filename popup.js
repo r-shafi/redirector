@@ -1,3 +1,5 @@
+const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+
 const DEFAULT_RULES = [
   {
     id: 'reddit-subreddit-blocker',
@@ -17,7 +19,8 @@ const DEFAULT_RULES = [
   {
     id: 'facebook-feed-redirect',
     name: 'Facebook Feed Redirect',
-    pattern: `/^https:\/\/www\.facebook\.com\/?$/`,
+    pattern: `^https:\/\/www\.facebook\.com\/?$`,
+
     destination: 'https://www.facebook.com/marketplace',
     enabled: true,
   },
@@ -42,7 +45,7 @@ const emptyStateTemplate = document.getElementById('emptyStateTemplate');
 
 async function loadRules() {
   try {
-    const result = await chrome.storage.sync.get(['redirectRules']);
+    const result = await browserAPI.storage.sync.get(['redirectRules']);
     currentRules = result.redirectRules || DEFAULT_RULES;
     renderRules();
   } catch (error) {
@@ -54,7 +57,7 @@ async function loadRules() {
 
 async function saveRules() {
   try {
-    await chrome.storage.sync.set({ redirectRules: currentRules });
+    await browserAPI.storage.sync.set({ redirectRules: currentRules });
   } catch (error) {
     console.error('Failed to save rules:', error);
   }

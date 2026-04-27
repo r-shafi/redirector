@@ -1,3 +1,5 @@
+const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+
 const DEFAULT_RULES = [
   {
     id: 'reddit-subreddit',
@@ -17,7 +19,8 @@ const DEFAULT_RULES = [
   {
     id: 'facebook-feed-redirect',
     name: 'Facebook Feed Redirect',
-    pattern: `/^https:\/\/www\.facebook\.com\/?$/`,
+    pattern: `^https:\/\/www\.facebook\.com\/?$`,
+
     destination: 'https://www.facebook.com/marketplace',
     enabled: true,
   },
@@ -27,7 +30,7 @@ let redirectRules = [];
 
 async function loadRules() {
   try {
-    const result = await chrome.storage.sync.get(['redirectRules']);
+    const result = await browserAPI.storage.sync.get(['redirectRules']);
     redirectRules = result.redirectRules || DEFAULT_RULES;
   } catch (error) {
     console.log('Failed to load rules, using defaults:', error);
