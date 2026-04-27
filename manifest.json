@@ -2,6 +2,12 @@
   "manifest_version": 3,
   "name": "Redirector",
   "version": "1.0",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "redirector@r-shafi",
+      "strict_min_version": "109.0"
+    }
+  },
   "description": "Redirect pages based on custom regex patterns with user-defined destinations",
   "permissions": ["storage", "activeTab"],
   "host_permissions": ["<all_urls>"],
